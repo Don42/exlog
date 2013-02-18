@@ -63,61 +63,30 @@ main(int argc, char *argv[])
 }
 
 void
-usage(void)
+usage (void)
 {
     fprintf(stderr, "usage: exlog [command] [-h]\n");
 }
 
 void
-setup(void)
+setup (void)
 {
     struct stat sts;
-    char *home = getenv("HOME");
+    char *home = getenv ("HOME");
     if (home != NULL)
     {
         size_t sizeNeeded = snprintf (NULL, 0, DEFAULT_FOLDER, home);
         char *path = malloc (sizeNeeded);
         snprintf (path, sizeNeeded, DEFAULT_FOLDER, home);
-        if ((stat(path, &sts)) == -1)
+        int ret = stat(path, &sts);
+        if ((ret == -1) || &sts != NULL && !S_ISDIR (sts.st_mode))
         {
             printf ("Storage folder not found.\n"
                     "Creating folder \"%s\" now...\n", path);
             if (mkdir (path, 0700) != 0)
             {
-                fprintf(stderr, "Failed to create storage folder: ");
-                switch(errno)
-                {
-                    case EACCES:
-                        fprintf(stderr, "EACCES\n");
-                        break;
-                    case EEXIST:
-                        fprintf(stderr, "EEXIST\n");
-                        break;
-                    case EFAULT:
-                        fprintf(stderr, "EFAULT\n");
-                        break;
-                    case EMLINK:
-                        fprintf(stderr, "EMLINK\n");
-                        break;
-                    case ENAMETOOLONG:
-                        fprintf(stderr, "ENAMETOOLONG\n");
-                        break;
-                    case ENOENT:
-                        fprintf(stderr, "ENOENT\n");
-                        break;
-                    case ENOSPC:
-                        fprintf(stderr, "ENOSPC\n");
-                        break;
-                    case ENOTDIR:
-                        fprintf(stderr, "ENOTDIR\n");
-                        break;
-                    case EPERM:
-                        fprintf(stderr, "EPERM\n");
-                        break;
-                    case EROFS:
-                        fprintf(stderr, "EROFS\n");
-                        break;
-                }
+                fprintf (stderr, "Failed to create storage folder: ");
+                fprintf (stderr, "ERROR: %s\n", strerror(errno));
             }
         }
     }
