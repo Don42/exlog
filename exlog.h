@@ -7,3 +7,10 @@
 * ----------------------------------------------------------------------------*/
 
 #define DEFAULT_FOLDER "%s/.exlog"
+
+void usage (void);
+void setup (void);
+
+void list (void);
+int add (void);
+void rm (void);
