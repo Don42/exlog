@@ -23,7 +23,7 @@
 
 
 char* getFileName ();
-
+int hasContent (char*);
 
 char *gStorageFolder;
 
@@ -128,24 +128,24 @@ add (void)
     char* buffer = "This is a Testentry\n";
 
     char* fileName = getFileName ();
-    int fd = open (fileName, O_CREAT | O_WRONLY, mode);
-    if (fd != -1)
-    {
 
-        int ret = write (fd, buffer, strlen (buffer));
-        close (fd);
-        if(ret != -1)
+    //TODO Copy default file to gStorageFolder before editing
+    char* command = malloc (strlen (gStorageFolder) + 21);
+    snprintf (command,strlen (gStorageFolder) + 21,
+            "$EDITOR %s/REPORT_BASE", gStorageFolder);
+    int ret = system (command);
+    snprintf (command, strlen(gStorageFolder) + 21,
+            "%s/REPORT_BASE\0", gStorageFolder);
+    if (ret == 0 && hasContent(command))
+    {
+        if (execl ("/bin/cp", "/bin/cp", command, fileName, (char *)0) != 0)
         {
-            return 0;
-        }else
-        {
-            fprintf (stderr, "ERROR: %s\n", strerror(errno));
-            return 2;
+            fprintf (stderr, "%s\n", strerror (errno));
         }
     }
+    free (command);
     free (fileName);
-    fprintf (stderr, "ERROR: %s\n", strerror(errno));
-    return 1;
+    return 0;
 }
 
 void
@@ -169,4 +169,10 @@ getFileName()
             te.tm_hour, te.tm_min, te.tm_sec);
 
     return buf;
+}
+
+int
+hasContent (char* file)
+{
+    return 1;
 }
