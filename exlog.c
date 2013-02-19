@@ -21,7 +21,13 @@
 
 #include "exlog.h"
 
+
+char* getFileName ();
+
+
 char *gStorageFolder;
+
+
 
 int
 main (int argc, char *argv[])
@@ -93,8 +99,8 @@ setup (void)
                     "Creating folder \"%s\" now...\n", path);
             if (mkdir (path, 0700) != 0)
             {
-                fprintf (stderr, "Failed to create storage folder: ");
-                fprintf (stderr, "ERROR: %s\n", strerror(errno));
+                fprintf (stderr, "Failed to create storage folder.\n"
+                            "ERROR: %s\n", strerror(errno));
             }
         }
         gStorageFolder = malloc (strlen (path));
@@ -119,20 +125,10 @@ add (void)
 {
     printf ("Add operation\n");
     int mode = S_IRUSR | S_IWUSR;
-    int dateLength = 19 + 1 + 1; //TODO: Move to constant
-    char *buffer = "This is a Testentry\n";
-    const char *fileNameFormat = "%s/%d-%d-%dT%d:%d:%d";
+    char* buffer = "This is a Testentry\n";
 
-    time_t t = time(NULL);
-    struct tm te = *localtime(&t);
-
-    size_t sizeNeeded = strlen (gStorageFolder) + dateLength;
-    char *buf = malloc (sizeNeeded);
-    snprintf (buf, sizeNeeded, fileNameFormat, gStorageFolder,
-            te.tm_year + 1900, te.tm_mon + 1, te.tm_mday,
-            te.tm_hour, te.tm_min, te.tm_sec);
-    printf ("%s\n", buf);
-    int fd = open (buf, O_CREAT | O_WRONLY, mode);
+    char* fileName = getFileName ();
+    int fd = open (fileName, O_CREAT | O_WRONLY, mode);
     if (fd != -1)
     {
 
@@ -147,7 +143,7 @@ add (void)
             return 2;
         }
     }
-    free (buf);
+    free (fileName);
     fprintf (stderr, "ERROR: %s\n", strerror(errno));
     return 1;
 }
@@ -156,4 +152,21 @@ void
 rm (void)
 {
     printf ("Rm operation");
+}
+
+char*
+getFileName()
+{
+    const char *fileNameFormat = "%s/%d-%02d-%02dT%02d:%02d:%02d";
+
+    time_t t = time(NULL);
+    struct tm te = *localtime(&t);
+
+    size_t sizeNeeded = strlen (gStorageFolder) + FILENAME_LENGTH;
+    char* buf = malloc (sizeNeeded);
+    snprintf (buf, sizeNeeded, fileNameFormat, gStorageFolder,
+            te.tm_year + 1900, te.tm_mon + 1, te.tm_mday,
+            te.tm_hour, te.tm_min, te.tm_sec);
+
+    return buf;
 }

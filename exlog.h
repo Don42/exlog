@@ -7,6 +7,7 @@
 * ----------------------------------------------------------------------------*/
 
 #define DEFAULT_FOLDER "%s/.exlog"
+#define FILENAME_LENGTH 21 // 19 for Date, 1 for preceding slash, 1 \0
 
 void usage (void);
 void setup (void);
