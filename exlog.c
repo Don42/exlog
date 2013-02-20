@@ -185,8 +185,12 @@ hasContent (char* fileName)
     while ((read = getline ( &line, &len, fp)) != -1)
     {
         if (line[0] != "#"[0])
+        {
+            fclose (fp);
             return 1;
+        }
     }
+    fclose (fp);
     return 0;
 }
 
