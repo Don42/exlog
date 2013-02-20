@@ -21,7 +21,7 @@
 
 #include "exlog.h"
 
-
+int copyTemplate ();
 char* getFileName ();
 int hasContent (char*);
 
@@ -129,7 +129,7 @@ add (void)
 
     char* fileName = getFileName ();
 
-    //TODO Copy default file to gStorageFolder before editing
+    copyTemplate();
     char* command = malloc (strlen (gStorageFolder) + 21);
     snprintf (command,strlen (gStorageFolder) + 21,
             "$EDITOR %s/REPORT_BASE", gStorageFolder);
@@ -172,7 +172,27 @@ getFileName()
 }
 
 int
-hasContent (char* file)
+hasContent (char* fileName)
 {
-    return 1;
+    FILE* fp = fopen (fileName, "r");
+    char* line = NULL;
+    size_t len = 0;
+    ssize_t read;
+
+    if (fp == NULL)
+        return 0;
+
+    while ((read = getline ( &line, &len, fp)) != -1)
+    {
+        if (line[0] != "#"[0])
+            return 1;
+    }
+    return 0;
+}
+
+int
+copyTemplate ()
+{
+    //TODO Write template file to storage folder
+    return 0;
 }
