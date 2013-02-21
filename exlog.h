@@ -8,6 +8,7 @@
 
 #define DEFAULT_FOLDER "%s/.exlog"
 #define FILENAME_LENGTH 21 // 19 for Date, 1 for preceding slash, 1 \0
+#define REPORT_DEFAULT "#ReportNumber:%s\n#Location:%s\n#Project:%s\n"
 
 void usage (void);
 void setup (void);

@@ -197,6 +197,16 @@ hasContent (char* fileName)
 int
 copyTemplate ()
 {
-    //TODO Write template file to storage folder
+    char* fileName = malloc (strlen (gStorageFolder) + 13);
+    snprintf (fileName, strlen (gStorageFolder) + 13, "%s/REPORT_BASE",
+            gStorageFolder);
+    FILE* fp = fopen (fileName, "w");
+    if (fp == NULL)
+    {
+        fprintf (stderr, "Could not open template file: %s", strerror (errno));
+        exit (1);
+    }
+    fprintf (fp, REPORT_DEFAULT, "", "", "");
+    fclose (fp);
     return 0;
 }
