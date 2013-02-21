@@ -17,22 +17,24 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <time.h>
+#include <dirent.h>
 
 
 #include "exlog.h"
 
-int copyTemplate ();
+size_t  copyTemplate (size_t ,char*, char*);
 char* getFileName ();
-int hasContent (char*);
+size_t hasContent (char*);
+size_t getNextID ();
 
-char *gStorageFolder;
+char* gStorageFolder;
 
 
 
 int
 main (int argc, char *argv[])
 {
-    int ch, cmd;
+    size_t ch, cmd;
     const char *commands[]={"add", "rm", "list", NULL};
     enum {ADD,RM,LIST};
 
@@ -46,7 +48,7 @@ main (int argc, char *argv[])
             default:
                 usage();
                 exit(EXIT_FAILURE);
-        }
+         }
     }
 
     setup();
@@ -69,17 +71,17 @@ main (int argc, char *argv[])
             list ();
             break;
         default:
-            fprintf(stderr, "Unknown command...");
-            exit(EXIT_FAILURE);
+            fprintf (stderr, "Unknown command...");
+            exit (EXIT_FAILURE);
             break;
     }
-    return (0);
+    return 0;
 }
 
 void
 usage (void)
 {
-    fprintf(stderr, "usage: exlog [command] [-h]\n");
+    fprintf (stderr, "usage: exlog [command] [-h]\n");
 }
 
 void
@@ -92,7 +94,7 @@ setup (void)
         size_t sizeNeeded = snprintf (NULL, 0, DEFAULT_FOLDER, home) + 1;
         char *path = malloc (sizeNeeded);
         snprintf (path, sizeNeeded, DEFAULT_FOLDER, home);
-        int ret = stat(path, &sts);
+        size_t ret = stat(path, &sts);
         if ((ret == -1) || &sts != NULL && !S_ISDIR (sts.st_mode))
         {
             printf ("Storage folder not found.\n"
@@ -120,25 +122,34 @@ list(void)
     printf ("List operation");
 }
 
-int
+size_t
 add (void)
 {
     printf ("Add operation\n");
-    int mode = S_IRUSR | S_IWUSR;
+    size_t mode = S_IRUSR | S_IWUSR;
     char* buffer = "This is a Testentry\n";
 
     char* fileName = getFileName ();
 
-    copyTemplate();
+    size_t id = getNextID ();
+    if (id < 0)
+        exit (25);
+    copyTemplate(getNextID (), NULL, NULL);
     char* command = malloc (strlen (gStorageFolder) + 21);
     snprintf (command,strlen (gStorageFolder) + 21,
             "$EDITOR %s/REPORT_BASE", gStorageFolder);
-    int ret = system (command);
+    size_t ret = system (command);
     snprintf (command, strlen(gStorageFolder) + 21,
             "%s/REPORT_BASE\0", gStorageFolder);
     if (ret == 0 && hasContent(command))
     {
-        if (execl ("/bin/cp", "/bin/cp", command, fileName, (char *)0) != 0)
+        if (execl ("/bin/mv", "/bin/mv", command, fileName, (char *)0) != 0)
+        {
+            fprintf (stderr, "%s\n", strerror (errno));
+        }
+    }else
+    {
+        if (execl ("/bin/rm", "/bin/rm", command, (char *)0) != 0)
         {
             fprintf (stderr, "%s\n", strerror (errno));
         }
@@ -171,7 +182,7 @@ getFileName()
     return buf;
 }
 
-int
+size_t
 hasContent (char* fileName)
 {
     FILE* fp = fopen (fileName, "r");
@@ -194,8 +205,8 @@ hasContent (char* fileName)
     return 0;
 }
 
-int
-copyTemplate ()
+size_t
+copyTemplate (size_t id, char* location, char* project)
 {
     char* fileName = malloc (strlen (gStorageFolder) + 13);
     snprintf (fileName, strlen (gStorageFolder) + 13, "%s/REPORT_BASE",
@@ -206,7 +217,38 @@ copyTemplate ()
         fprintf (stderr, "Could not open template file: %s", strerror (errno));
         exit (1);
     }
-    fprintf (fp, REPORT_DEFAULT, "", "", "");
+    fprintf (fp, REPORT_ID, id);
+    if (location != NULL)
+    {
+        fprintf (fp, REPORT_LOCATION, location);
+    }
+    if (project != NULL)
+    {
+        fprintf (fp, REPORT_PROJECT, project);
+    }
     fclose (fp);
     return 0;
+}
+
+size_t
+getNextID ()
+{
+    struct dirent **nameList;
+    size_t numberFiles;
+
+    //TODO Add Regex filter function
+    numberFiles = scandir (gStorageFolder, &nameList, NULL, alphasort);
+    if (numberFiles < 0)
+    {
+        fprintf (stderr, "Could not open storage folder: %s\n",
+                strerror (errno));
+        exit(2);
+    }else
+    {
+        //printf ("Number of Files: %d\n", numberFiles);
+        //printf ("Last File: %s\n", nameList[numberFiles-1]->d_name);
+        return (numberFiles - 2);
+    }
+
+    return -1;
 }
