@@ -15,6 +15,6 @@
 void usage (void);
 void setup (void);
 
-void list (void);
-size_t add (void);
-void rm (void);
+int list (void);
+int add (void);
+int rm (void);

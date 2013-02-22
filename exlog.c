@@ -25,7 +25,8 @@
 size_t  copyTemplate (size_t ,char*, char*);
 char* getFileName ();
 size_t hasContent (char*);
-size_t getNextID ();
+int getNextID ();
+int getFileID (char*);
 
 char* gStorageFolder;
 
@@ -116,10 +117,11 @@ setup (void)
     }
 }
 
-void
+int
 list(void)
 {
     printf ("List operation");
+    return 0;
 }
 
 size_t
@@ -131,10 +133,12 @@ add (void)
 
     char* fileName = getFileName ();
 
-    size_t id = getNextID ();
+    int id = getNextID ();
     if (id < 0)
+    {
         exit (25);
-    copyTemplate(getNextID (), NULL, NULL);
+    }
+    copyTemplate(id, NULL, NULL);
     char* command = malloc (strlen (gStorageFolder) + 21);
     snprintf (command,strlen (gStorageFolder) + 21,
             "$EDITOR %s/REPORT_BASE", gStorageFolder);
@@ -146,12 +150,14 @@ add (void)
         if (execl ("/bin/mv", "/bin/mv", command, fileName, (char *)0) != 0)
         {
             fprintf (stderr, "%s\n", strerror (errno));
+            exit (10);
         }
     }else
     {
         if (execl ("/bin/rm", "/bin/rm", command, (char *)0) != 0)
         {
             fprintf (stderr, "%s\n", strerror (errno));
+            exit (11);
         }
     }
     free (command);
@@ -159,10 +165,11 @@ add (void)
     return 0;
 }
 
-void
+int
 rm (void)
 {
     printf ("Rm operation");
+    return 0;
 }
 
 char*
@@ -230,7 +237,7 @@ copyTemplate (size_t id, char* location, char* project)
     return 0;
 }
 
-size_t
+int
 getNextID ()
 {
     struct dirent **nameList;
@@ -245,10 +252,38 @@ getNextID ()
         exit(2);
     }else
     {
-        //printf ("Number of Files: %d\n", numberFiles);
-        //printf ("Last File: %s\n", nameList[numberFiles-1]->d_name);
-        return (numberFiles - 2);
+        char* fileName = malloc ( strlen (gStorageFolder) + strlen (
+                    nameList[numberFiles - 1]->d_name) + 2);
+        snprintf (fileName, strlen (gStorageFolder) + strlen (
+                    nameList[numberFiles - 1]->d_name) + 2,
+                    "%s/%s", gStorageFolder, nameList[numberFiles - 1]->d_name);
+        int id = getFileID (fileName);
+        free (fileName);
+        return id;
     }
 
     return -1;
+}
+
+int
+getFileID (char* fileName)
+{
+    FILE* fp = fopen (fileName, "r");
+    char* line = NULL;
+    size_t len = 0;
+    ssize_t read;
+
+    if (fp == NULL)
+        return -1;
+
+    if ((read = getline ( &line, &len, fp)) != -1)
+    {
+        size_t id = -1;
+        size_t ret = sscanf (line, REPORT_ID, &id);
+        fclose (fp);
+        return id;
+    }
+    fclose (fp);
+    return -1;
+
 }
