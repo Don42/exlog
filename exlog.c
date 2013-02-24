@@ -305,7 +305,6 @@ getFileID (char* fileName)
 int
 filterFiles (const struct dirent* de)
 {
-    //TODO Add Regex filter function
     regex_t regex;
     int ret;
     char* fileName = malloc (strlen (de->d_name) + 1);
@@ -326,6 +325,7 @@ filterFiles (const struct dirent* de)
         }
 
         ret = regexec (&regex, fileName, 0, NULL, 0);
+        regfree (&regex);
         free (fileName);
         if (ret == 0)
         {
