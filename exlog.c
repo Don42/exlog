@@ -18,7 +18,7 @@
 #include <unistd.h>
 #include <time.h>
 #include <dirent.h>
-
+#include <regex.h>
 
 #include "exlog.h"
 
@@ -306,7 +306,37 @@ int
 filterFiles (const struct dirent* de)
 {
     //TODO Add Regex filter function
-    if (strlen (de->d_name) != 19)
+    regex_t regex;
+    int ret;
+    char* fileName = malloc (strlen (de->d_name) + 1);
+
+    strncpy (fileName, de->d_name, strlen (de->d_name) + 1);
+    if (strlen (fileName) != 19)
+    {
         return 0;
-    return 1;
+    } else
+    {
+        ret = regcomp (&regex,
+                "[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}",
+                REG_NOSUB | REG_EXTENDED);
+        if (ret != 0)
+        {
+            fprintf (stderr, "Could not compile regex\n");
+            exit (4);
+        }
+
+        ret = regexec (&regex, fileName, 0, NULL, 0);
+        free (fileName);
+        if (ret == 0)
+        {
+            return 1;
+        }else if (ret == REG_NOMATCH)
+        {
+            return 0;
+        }else
+        {
+            fprintf (stderr, "Error executing regex\n");
+            exit (4);
+        }
+    }
 }
