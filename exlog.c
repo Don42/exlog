@@ -251,14 +251,13 @@ getNextID ()
     int id = -1;
     int i = 0;
 
-    //TODO Add Regex filter function
     numberFiles = scandir (gStorageFolder, &nameList, filterFiles, alphasort);
     if (numberFiles < 0)
     {
         fprintf (stderr, "Could not open storage folder: %s\n",
                 strerror (errno));
         exit(2);
-    }else if (numberFiles <= 2)
+    }else if (numberFiles == 0)
     {
         id = 0;
     }else
@@ -268,7 +267,7 @@ getNextID ()
         snprintf (fileName, strlen (gStorageFolder) + strlen (
                     nameList[numberFiles - 1]->d_name) + 2,
                     "%s/%s", gStorageFolder, nameList[numberFiles - 1]->d_name);
-        id = getFileID (fileName);
+        id = getFileID (fileName) + 1;
         free (fileName);
     }
 
@@ -306,5 +305,8 @@ getFileID (char* fileName)
 int
 filterFiles (const struct dirent* de)
 {
+    //TODO Add Regex filter function
+    if (strlen (de->d_name) != 19)
+        return 0;
     return 1;
 }
