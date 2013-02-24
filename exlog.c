@@ -28,6 +28,8 @@ size_t hasContent (char*);
 int getNextID ();
 int getFileID (char*);
 
+int filterFiles (const struct dirent *);
+
 char* gStorageFolder;
 
 
@@ -121,6 +123,10 @@ int
 list(void)
 {
     printf ("List operation");
+    struct dirent **nameList;
+    size_t numberFiles;
+
+    numberFiles = scandir (gStorageFolder, &nameList, NULL, alphasort)
     return 0;
 }
 
@@ -286,4 +292,10 @@ getFileID (char* fileName)
     fclose (fp);
     return -1;
 
+}
+
+int
+filterFiles (const struct dirent* de)
+{
+    return 1;
 }
