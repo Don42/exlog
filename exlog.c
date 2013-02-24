@@ -126,11 +126,11 @@ list(void)
     struct dirent **nameList;
     size_t numberFiles;
 
-    numberFiles = scandir (gStorageFolder, &nameList, NULL, alphasort)
+    numberFiles = scandir (gStorageFolder, &nameList, filterFiles, alphasort);
     return 0;
 }
 
-size_t
+int
 add (void)
 {
     printf ("Add operation\n");
@@ -248,14 +248,19 @@ getNextID ()
 {
     struct dirent **nameList;
     size_t numberFiles;
+    int id = -1;
+    int i = 0;
 
     //TODO Add Regex filter function
-    numberFiles = scandir (gStorageFolder, &nameList, NULL, alphasort);
+    numberFiles = scandir (gStorageFolder, &nameList, filterFiles, alphasort);
     if (numberFiles < 0)
     {
         fprintf (stderr, "Could not open storage folder: %s\n",
                 strerror (errno));
         exit(2);
+    }else if (numberFiles <= 2)
+    {
+        id = 0;
     }else
     {
         char* fileName = malloc ( strlen (gStorageFolder) + strlen (
@@ -263,12 +268,16 @@ getNextID ()
         snprintf (fileName, strlen (gStorageFolder) + strlen (
                     nameList[numberFiles - 1]->d_name) + 2,
                     "%s/%s", gStorageFolder, nameList[numberFiles - 1]->d_name);
-        int id = getFileID (fileName);
+        id = getFileID (fileName);
         free (fileName);
-        return id;
     }
 
-    return -1;
+    for (i = 0; i < numberFiles; i++)
+    {
+        free(nameList[i]);
+    }
+    free (nameList);
+    return id;
 }
 
 int
