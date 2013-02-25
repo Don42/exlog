@@ -30,6 +30,10 @@ int getFileID (char*);
 
 int filterFiles (const struct dirent *);
 
+void setup (void);
+void teardown (void);
+
+
 char* gStorageFolder;
 
 
@@ -54,11 +58,11 @@ main (int argc, char *argv[])
          }
     }
 
-    setup();
+    setup ();
     if (argc <= 1)
     {
-        list();
-        exit(EXIT_SUCCESS);
+        list ();
+        exit (EXIT_SUCCESS);
     }
 
     for (cmd=0;commands[cmd] && strcasecmp(argv[1],commands[cmd]);cmd++);
@@ -78,6 +82,7 @@ main (int argc, char *argv[])
             exit (EXIT_FAILURE);
             break;
     }
+    teardown ();
     return 0;
 }
 
@@ -119,6 +124,12 @@ setup (void)
     }
 }
 
+void
+teardown (void)
+{
+    free (gStorageFolder);
+}
+
 int
 list(void)
 {
@@ -127,6 +138,7 @@ list(void)
     size_t numberFiles;
 
     numberFiles = scandir (gStorageFolder, &nameList, filterFiles, alphasort);
+    printf ("%d Logentries found\n", numberFiles);
     return 0;
 }
 
@@ -290,7 +302,7 @@ getFileID (char* fileName)
     if (fp == NULL)
         return -1;
 
-    if ((read = getline ( &line, &len, fp)) != -1)
+    if ((read = getline (&line, &len, fp)) != -1)
     {
         size_t id = -1;
         size_t ret = sscanf (line, REPORT_ID, &id);
