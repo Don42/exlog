@@ -113,8 +113,8 @@ setup (void)
                             "ERROR: %s\n", strerror(errno));
             }
         }
-        gStorageFolder = malloc (strlen (path));
-        strncpy (gStorageFolder, path, strlen (path));
+        gStorageFolder = malloc (strlen (path) + 1);
+        strncpy (gStorageFolder, path, strlen (path) + 1);
         free (path);
 
     }else
@@ -128,17 +128,27 @@ void
 teardown (void)
 {
     free (gStorageFolder);
+    gStorageFolder = NULL;
 }
 
 int
 list(void)
 {
-    printf ("List operation");
+    printf ("List operation\n");
     struct dirent **nameList;
     size_t numberFiles;
+    int i = 0;
 
     numberFiles = scandir (gStorageFolder, &nameList, filterFiles, alphasort);
     printf ("%d Logentries found\n", numberFiles);
+
+    for (; i < numberFiles; i++)
+    {
+        printf ("Log on %s\n", nameList[i]->d_name);
+        free (nameList[i]);
+    }
+
+    free (nameList);
     return 0;
 }
 
@@ -320,10 +330,10 @@ filterFiles (const struct dirent* de)
     regex_t regex;
     int ret;
     char* fileName = malloc (strlen (de->d_name) + 1);
-
     strncpy (fileName, de->d_name, strlen (de->d_name) + 1);
     if (strlen (fileName) != 19)
     {
+        free(fileName);
         return 0;
     } else
     {
