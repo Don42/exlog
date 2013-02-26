@@ -23,10 +23,11 @@
 #include "exlog.h"
 
 size_t  copyTemplate (size_t ,char*, char*);
-char* getFileName ();
+char* getFileName (void);
 size_t hasContent (char*);
-int getNextID ();
+int getNextID (void);
 int getFileID (char*);
+int printEntry (char*);
 
 int filterFiles (const struct dirent *);
 
@@ -140,11 +141,18 @@ list(void)
     int i = 0;
 
     numberFiles = scandir (gStorageFolder, &nameList, filterFiles, alphasort);
-    printf ("%d Logentries found\n", numberFiles);
 
     for (; i < numberFiles; i++)
     {
+        char* absPath = malloc (strlen (gStorageFolder)
+                + strlen (nameList[i]->d_name) + 2);
+        snprintf (absPath,
+                    strlen (gStorageFolder) + strlen (nameList[i]->d_name) + 2,
+                    "%s/%s", gStorageFolder, nameList[i]->d_name);
+
         printf ("Log on %s\n", nameList[i]->d_name);
+        printEntry (absPath);
+        free (absPath);
         free (nameList[i]);
     }
 
@@ -361,4 +369,27 @@ filterFiles (const struct dirent* de)
             exit (4);
         }
     }
+}
+
+int
+printEntry (char* fileName)
+{
+    FILE* fp = fopen (fileName, "r");
+    char* line = NULL;
+    size_t len = 0;
+    ssize_t read;
+
+    if (fp == NULL)
+        return -1;
+
+    while ((read = getline (&line, &len, fp)) != -1)
+    {
+        size_t id = -1;
+        size_t ret = sscanf (line, REPORT_ID, &id);
+        printf ("%s", line);
+    }
+    if (line != NULL){free (line);}
+    printf ("\n");
+    fclose (fp);
+    return 0;
 }
