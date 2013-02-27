@@ -7,6 +7,10 @@ LDFLAGS+=	-L/usr/lib
 
 BIN=	exlog
 OBJ+=	exlog.o
+OBJ+=	filter.o
+OBJ+=	id.o
+OBJ+=	add.o
+OBJ+=	list.o
 
 all:	$(BIN)
 

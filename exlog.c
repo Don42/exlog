@@ -21,15 +21,9 @@
 #include <regex.h>
 
 #include "exlog.h"
-
-size_t  copyTemplate (size_t ,char*, char*);
-char* getFileName (void);
-size_t hasContent (char*);
-int getNextID (void);
-int getFileID (char*);
-int printEntry (char*);
-
-int filterFiles (const struct dirent *);
+#include "res.h"
+#include "add.h"
+#include "list.h"
 
 void setup (void);
 void teardown (void);
@@ -62,7 +56,7 @@ main (int argc, char *argv[])
     setup ();
     if (argc <= 1)
     {
-        list ();
+        list (gStorageFolder);
         exit (EXIT_SUCCESS);
     }
 
@@ -70,13 +64,13 @@ main (int argc, char *argv[])
     switch (cmd)
     {
         case ADD:
-            return add ();
+            return add (gStorageFolder);
             break;
         case RM:
             rm ();
             break;
         case LIST:
-            list ();
+            list (gStorageFolder);
             break;
         default:
             fprintf (stderr, "Unknown command...");
@@ -132,264 +126,10 @@ teardown (void)
     gStorageFolder = NULL;
 }
 
-int
-list(void)
-{
-    printf ("List operation\n");
-    struct dirent **nameList;
-    size_t numberFiles;
-    int i = 0;
-
-    numberFiles = scandir (gStorageFolder, &nameList, filterFiles, alphasort);
-
-    for (; i < numberFiles; i++)
-    {
-        char* absPath = malloc (strlen (gStorageFolder)
-                + strlen (nameList[i]->d_name) + 2);
-        snprintf (absPath,
-                    strlen (gStorageFolder) + strlen (nameList[i]->d_name) + 2,
-                    "%s/%s", gStorageFolder, nameList[i]->d_name);
-
-        printf ("Log on %s\n", nameList[i]->d_name);
-        printEntry (absPath);
-        free (absPath);
-        free (nameList[i]);
-    }
-
-    free (nameList);
-    return 0;
-}
-
-int
-add (void)
-{
-    printf ("Add operation\n");
-    size_t mode = S_IRUSR | S_IWUSR;
-    char* buffer = "This is a Testentry\n";
-
-    char* fileName = getFileName ();
-
-    int id = getNextID ();
-    if (id < 0)
-    {
-        exit (25);
-    }
-    copyTemplate(id, NULL, NULL);
-    char* command = malloc (strlen (gStorageFolder) + 21);
-    snprintf (command,strlen (gStorageFolder) + 21,
-            "$EDITOR %s/REPORT_BASE", gStorageFolder);
-    size_t ret = system (command);
-    snprintf (command, strlen(gStorageFolder) + 21,
-            "%s/REPORT_BASE\0", gStorageFolder);
-    if (ret == 0 && hasContent(command))
-    {
-        if (execl ("/bin/mv", "/bin/mv", command, fileName, (char *)0) != 0)
-        {
-            fprintf (stderr, "%s\n", strerror (errno));
-            exit (10);
-        }
-    }else
-    {
-        if (execl ("/bin/rm", "/bin/rm", command, (char *)0) != 0)
-        {
-            fprintf (stderr, "%s\n", strerror (errno));
-            exit (11);
-        }
-    }
-    free (command);
-    free (fileName);
-    return 0;
-}
 
 int
 rm (void)
 {
     printf ("Rm operation");
-    return 0;
-}
-
-char*
-getFileName()
-{
-    const char *fileNameFormat = "%s/%d-%02d-%02dT%02d:%02d:%02d";
-
-    time_t t = time(NULL);
-    struct tm te = *localtime(&t);
-
-    size_t sizeNeeded = strlen (gStorageFolder) + FILENAME_LENGTH;
-    char* buf = malloc (sizeNeeded);
-    snprintf (buf, sizeNeeded, fileNameFormat, gStorageFolder,
-            te.tm_year + 1900, te.tm_mon + 1, te.tm_mday,
-            te.tm_hour, te.tm_min, te.tm_sec);
-
-    return buf;
-}
-
-size_t
-hasContent (char* fileName)
-{
-    FILE* fp = fopen (fileName, "r");
-    char* line = NULL;
-    size_t len = 0;
-    ssize_t read;
-
-    if (fp == NULL)
-        return 0;
-
-    while ((read = getline ( &line, &len, fp)) != -1)
-    {
-        if (line[0] != "#"[0])
-        {
-            fclose (fp);
-            return 1;
-        }
-    }
-    fclose (fp);
-    return 0;
-}
-
-size_t
-copyTemplate (size_t id, char* location, char* project)
-{
-    char* fileName = malloc (strlen (gStorageFolder) + 13);
-    snprintf (fileName, strlen (gStorageFolder) + 13, "%s/REPORT_BASE",
-            gStorageFolder);
-    FILE* fp = fopen (fileName, "w");
-    if (fp == NULL)
-    {
-        fprintf (stderr, "Could not open template file: %s", strerror (errno));
-        exit (1);
-    }
-    fprintf (fp, REPORT_ID, id);
-    if (location != NULL)
-    {
-        fprintf (fp, REPORT_LOCATION, location);
-    }
-    if (project != NULL)
-    {
-        fprintf (fp, REPORT_PROJECT, project);
-    }
-    fclose (fp);
-    return 0;
-}
-
-int
-getNextID ()
-{
-    struct dirent **nameList;
-    size_t numberFiles;
-    int id = -1;
-    int i = 0;
-
-    numberFiles = scandir (gStorageFolder, &nameList, filterFiles, alphasort);
-    if (numberFiles < 0)
-    {
-        fprintf (stderr, "Could not open storage folder: %s\n",
-                strerror (errno));
-        exit(2);
-    }else if (numberFiles == 0)
-    {
-        id = 0;
-    }else
-    {
-        char* fileName = malloc ( strlen (gStorageFolder) + strlen (
-                    nameList[numberFiles - 1]->d_name) + 2);
-        snprintf (fileName, strlen (gStorageFolder) + strlen (
-                    nameList[numberFiles - 1]->d_name) + 2,
-                    "%s/%s", gStorageFolder, nameList[numberFiles - 1]->d_name);
-        id = getFileID (fileName) + 1;
-        free (fileName);
-    }
-
-    for (i = 0; i < numberFiles; i++)
-    {
-        free(nameList[i]);
-    }
-    free (nameList);
-    return id;
-}
-
-int
-getFileID (char* fileName)
-{
-    FILE* fp = fopen (fileName, "r");
-    char* line = NULL;
-    size_t len = 0;
-    ssize_t read;
-
-    if (fp == NULL)
-        return -1;
-
-    if ((read = getline (&line, &len, fp)) != -1)
-    {
-        size_t id = -1;
-        size_t ret = sscanf (line, REPORT_ID, &id);
-        fclose (fp);
-        return id;
-    }
-    fclose (fp);
-    return -1;
-
-}
-
-int
-filterFiles (const struct dirent* de)
-{
-    regex_t regex;
-    int ret;
-    char* fileName = malloc (strlen (de->d_name) + 1);
-    strncpy (fileName, de->d_name, strlen (de->d_name) + 1);
-    if (strlen (fileName) != 19)
-    {
-        free(fileName);
-        return 0;
-    } else
-    {
-        ret = regcomp (&regex,
-                "[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}",
-                REG_NOSUB | REG_EXTENDED);
-        if (ret != 0)
-        {
-            fprintf (stderr, "Could not compile regex\n");
-            exit (4);
-        }
-
-        ret = regexec (&regex, fileName, 0, NULL, 0);
-        regfree (&regex);
-        free (fileName);
-        if (ret == 0)
-        {
-            return 1;
-        }else if (ret == REG_NOMATCH)
-        {
-            return 0;
-        }else
-        {
-            fprintf (stderr, "Error executing regex\n");
-            exit (4);
-        }
-    }
-}
-
-int
-printEntry (char* fileName)
-{
-    FILE* fp = fopen (fileName, "r");
-    char* line = NULL;
-    size_t len = 0;
-    ssize_t read;
-
-    if (fp == NULL)
-        return -1;
-
-    while ((read = getline (&line, &len, fp)) != -1)
-    {
-        size_t id = -1;
-        size_t ret = sscanf (line, REPORT_ID, &id);
-        printf ("%s", line);
-    }
-    if (line != NULL){free (line);}
-    printf ("\n");
-    fclose (fp);
     return 0;
 }

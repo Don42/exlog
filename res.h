@@ -6,6 +6,8 @@
 * Marco 'don' Kaulea
 * ----------------------------------------------------------------------------*/
 
-void usage (void);
-
-int rm (void);
+#define DEFAULT_FOLDER "%s/.exlog"
+#define FILENAME_LENGTH 21 // 19 for Date, 1 for preceding slash, 1 \0
+#define REPORT_ID "#ReportNumber:%d\n"
+#define REPORT_LOCATION "#Location:%s\n"
+#define REPORT_PROJECT "#Project:%s\n"
