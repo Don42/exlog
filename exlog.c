@@ -36,7 +36,7 @@ main (int argc, char *argv[])
     size_t ch, cmd;
     const char *commands[]={"add", "rm", "list", NULL};
     enum {ADD,RM,LIST};
-    int id = -1;
+    uint id;
 
     while ((ch = getopt(argc, argv, "h")) != -1)
     {
@@ -66,12 +66,14 @@ main (int argc, char *argv[])
             return add (gStorageFolder);
             break;
         case RM:
-            if (argc <=2 && sscanf (argv[2], "%u", &id) !=1)
+            if (argc >=2 && sscanf (argv[2], "%u", &id) == 1)
+            {
+                rm (id);
+            }else
             {
                 usage ();
                 exit (EXIT_FAILURE);
             }
-            rm (id);
             break;
         case LIST:
             list (gStorageFolder);

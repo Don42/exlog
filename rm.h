@@ -10,4 +10,4 @@
 
 #include <stdlib.h>
 
-int rm (int);
+int rm (uint);

@@ -13,8 +13,8 @@
 #include "rm.h"
 
 int
-rm (int id)
+rm (uint id)
 {
-    printf ("Rm operation, deleting log id %d", id);
+    printf ("Rm operation, deleting log id %d\n", id);
     return 0;
 }

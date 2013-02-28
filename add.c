@@ -54,7 +54,7 @@ add (const char* storageFolder)
         }
     }else
     {
-        if (execl ("/bin/rm", "/bin/rm", command, (char *)0) != 0)
+        if (remove (command) != 0)
         {
             fprintf (stderr, "%s\n", strerror (errno));
             exit (11);
