@@ -6,3 +6,15 @@
 * Marco 'don' Kaulea
 * ----------------------------------------------------------------------------*/
 
+#define _GNU_SOURCE
+
+#include <stdio.h>
+
+#include "rm.h"
+
+int
+rm (int id)
+{
+    printf ("Rm operation, deleting log id %d", id);
+    return 0;
+}

@@ -6,3 +6,8 @@
 * Marco 'don' Kaulea
 * ----------------------------------------------------------------------------*/
 
+#define _GNU_SOURCE
+
+#include <stdlib.h>
+
+int rm (int);

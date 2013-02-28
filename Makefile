@@ -11,6 +11,7 @@ OBJ+=	filter.o
 OBJ+=	id.o
 OBJ+=	add.o
 OBJ+=	list.o
+OBJ+=	rm.o
 
 all:	$(BIN)
 

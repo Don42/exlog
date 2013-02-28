@@ -8,23 +8,20 @@
 
 #define _GNU_SOURCE
 
-#include <fcntl.h>
 #include <getopt.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
 #include <sys/stat.h>
-#include <unistd.h>
-#include <time.h>
-#include <dirent.h>
-#include <regex.h>
 
 #include "exlog.h"
 #include "res.h"
 #include "add.h"
+#include "rm.h"
 #include "list.h"
 
+void usage (void);
 void setup (void);
 void teardown (void);
 
@@ -39,17 +36,18 @@ main (int argc, char *argv[])
     size_t ch, cmd;
     const char *commands[]={"add", "rm", "list", NULL};
     enum {ADD,RM,LIST};
+    int id = -1;
 
     while ((ch = getopt(argc, argv, "h")) != -1)
     {
         switch (ch)
         {
             case 'h':
-                usage();
-                exit(EXIT_SUCCESS);
+                usage ();
+                exit (EXIT_SUCCESS);
             default:
-                usage();
-                exit(EXIT_FAILURE);
+                usage ();
+                exit (EXIT_FAILURE);
          }
     }
 
@@ -57,6 +55,7 @@ main (int argc, char *argv[])
     if (argc <= 1)
     {
         list (gStorageFolder);
+        free (gStorageFolder);
         exit (EXIT_SUCCESS);
     }
 
@@ -67,7 +66,12 @@ main (int argc, char *argv[])
             return add (gStorageFolder);
             break;
         case RM:
-            rm ();
+            if (argc <=2 && sscanf (argv[2], "%u", &id) !=1)
+            {
+                usage ();
+                exit (EXIT_FAILURE);
+            }
+            rm (id);
             break;
         case LIST:
             list (gStorageFolder);
@@ -124,12 +128,4 @@ teardown (void)
 {
     free (gStorageFolder);
     gStorageFolder = NULL;
-}
-
-
-int
-rm (void)
-{
-    printf ("Rm operation");
-    return 0;
 }
