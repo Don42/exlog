@@ -68,17 +68,18 @@ add (const char* storageFolder)
 char*
 getFileName(const char* storageFolder)
 {
-    const char *fileNameFormat = "%s/%d-%02d-%02dT%02d:%02d:%02d";
+    const char *fileNameFormat = "%s/%s";
+    const char* timeFormat = "%FT%T%z";
 
     time_t t = time(NULL);
     struct tm te = *localtime(&t);
 
     size_t sizeNeeded = strlen (storageFolder) + FILENAME_LENGTH;
+    char* timeBuffer = malloc (FILENAME_LENGTH);
+    strftime (timeBuffer, FILENAME_LENGTH, timeFormat, &te);
     char* buf = malloc (sizeNeeded);
-    snprintf (buf, sizeNeeded, fileNameFormat, storageFolder,
-            te.tm_year + 1900, te.tm_mon + 1, te.tm_mday,
-            te.tm_hour, te.tm_min, te.tm_sec);
-
+    snprintf (buf, sizeNeeded, fileNameFormat, storageFolder, timeBuffer);
+    free (timeBuffer);
     return buf;
 }
 
