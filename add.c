@@ -129,14 +129,17 @@ copyTemplate (size_t id, const char* location, const char* project,
         tz = "UTC";
     }
     fprintf (fp, REPORT_TZ, tz);
-    if (location != NULL)
+    if (location == NULL)
     {
-        fprintf (fp, REPORT_LOCATION, location);
+        location = "";
     }
-    if (project != NULL)
+    fprintf (fp, REPORT_LOCATION, location);
+    if (project == NULL)
     {
-        fprintf (fp, REPORT_PROJECT, project);
+        project = "";
     }
+    fprintf (fp, REPORT_PROJECT, project);
+
     fclose (fp);
     return 0;
 }

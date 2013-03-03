@@ -36,17 +36,23 @@ list(const char* storageFolder)
         snprintf (fileNameBuffer, strlen (storageFolder) + 12, "%s/%s",
                     storageFolder, nameList[i]->d_name);
         entries[i] = getEntryFromFile (fileNameBuffer);
+        free (nameList[i]);
+        if (entries[i] != NULL)
+        {
+            printf ("Entry %d at %d in timezone %s\n", entries[i]->id, entries[i]->time,
+                    entries[i]->timezone);
+            printf ("Entry for project %s at location %s\n\n", entries[i]->project,
+                    entries[i]->location);
+        }
     }
 
     for (i = 0; i < numberFiles; i++)
     {
-        snprintf (fileNameBuffer,
-                    strlen (storageFolder) + strlen (nameList[i]->d_name) + 2,
-                    "%s/%s", storageFolder, nameList[i]->d_name);
-
-        printf ("Log on %s\n", nameList[i]->d_name);
-        printEntry (fileNameBuffer);
-        free (nameList[i]);
+        free (entries[i]->timezone);
+        free (entries[i]->location);
+        free (entries[i]->project);
+        free (entries[i]->content);
+        free (entries[i]);
     }
 
     free (fileNameBuffer);
