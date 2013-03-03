@@ -15,15 +15,17 @@
 #include <errno.h>
 #include <unistd.h>
 #include <time.h>
+#include <dirent.h>
 
 #include "add.h"
 #include "res.h"
-#include "id.h"
+#include "entry.h"
+#include "filter.h"
 
 size_t  copyTemplate (size_t ,const char*, const char*, const char*);
 char* getFileName (const char*);
 size_t hasContent (const char*);
-
+int getNextID(const char*);
 
 int
 add (const char* storageFolder)
@@ -140,4 +142,45 @@ copyTemplate (size_t id, const char* location, const char* project,
 }
 
 
+int
+getNextID (const char* storageFolder)
+{
+    struct dirent **nameList;
+    size_t numberFiles;
+    int id = -1;
+    int i = 0;
 
+    numberFiles = scandir (storageFolder, &nameList, filterFiles, alphasort);
+    if (numberFiles < 0)
+    {
+        fprintf (stderr, "Could not open storage folder: %s\n",
+                strerror (errno));
+        exit(2);
+    }else if (numberFiles == 0)
+    {
+        id = 0;
+    }else
+    {
+        char* fileName = malloc ( strlen (storageFolder) + strlen (
+                    nameList[numberFiles - 1]->d_name) + 2);
+        snprintf (fileName, strlen (storageFolder) + strlen (
+                    nameList[numberFiles - 1]->d_name) + 2,
+                    "%s/%s", storageFolder, nameList[numberFiles - 1]->d_name);
+        FILE* fp = fopen (fileName, "r");
+        if (fp != NULL)
+        {
+            id = getIDFromFile (fp) + 1;
+        }else
+        {
+            id = 0;
+        }
+        free (fileName);
+    }
+
+    for (i = 0; i < numberFiles; i++)
+    {
+        free(nameList[i]);
+    }
+    free (nameList);
+    return id;
+}
