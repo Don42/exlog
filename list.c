@@ -12,10 +12,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <dirent.h>
+#include <time.h>
 
 #include "list.h"
 #include "filter.h"
 #include "res.h"
+#include "id.h"
+#include "entry.h"
 
 int
 list(const char* storageFolder)
@@ -23,24 +26,32 @@ list(const char* storageFolder)
     printf ("List operation\n");
     struct dirent **nameList;
     size_t numberFiles;
+    struct LogEntry **entries;
+    char* fileNameBuffer = malloc (strlen (storageFolder) + 12);
     int i = 0;
 
     numberFiles = scandir (storageFolder, &nameList, filterFiles, alphasort);
-
-    for (; i < numberFiles; i++)
+    entries = malloc (numberFiles * sizeof (struct LogEntry));
+    for (i = 0; i < numberFiles; i++)
     {
-        char* absPath = malloc (strlen (storageFolder)
-                + strlen (nameList[i]->d_name) + 2);
-        snprintf (absPath,
+        snprintf (fileNameBuffer, strlen (storageFolder) + 12, "%s/%s",
+                    storageFolder, nameList[i]->d_name);
+        entries[i] = getEntryFromFile (fileNameBuffer);
+    }
+
+    for (i = 0; i < numberFiles; i++)
+    {
+        snprintf (fileNameBuffer,
                     strlen (storageFolder) + strlen (nameList[i]->d_name) + 2,
                     "%s/%s", storageFolder, nameList[i]->d_name);
 
         printf ("Log on %s\n", nameList[i]->d_name);
-        printEntry (absPath);
-        free (absPath);
+        printEntry (fileNameBuffer);
         free (nameList[i]);
     }
 
+    free (fileNameBuffer);
+    free (entries);
     free (nameList);
     return 0;
 }

@@ -20,7 +20,7 @@ filterFiles (const struct dirent* de)
     int ret;
     char* fileName = malloc (strlen (de->d_name) + 1);
     strncpy (fileName, de->d_name, strlen (de->d_name) + 1);
-    if (strlen (fileName) != 24)
+    if (strlen (fileName) != 10)
         //This depends on the regex used! Change accordingly
     {
         free(fileName);
@@ -28,7 +28,7 @@ filterFiles (const struct dirent* de)
     } else
     {
         ret = regcomp (&regex,
-                "[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}[+-][0-9]{4}",
+                "[0-9]{10}",
                 REG_NOSUB | REG_EXTENDED);
         if (ret != 0)
         {

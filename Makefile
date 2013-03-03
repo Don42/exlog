@@ -12,6 +12,7 @@ OBJ+=	id.o
 OBJ+=	add.o
 OBJ+=	list.o
 OBJ+=	rm.o
+OBJ+=	entry.o
 
 all:	$(BIN)
 

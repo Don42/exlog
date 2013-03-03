@@ -9,5 +9,6 @@
 #define DEFAULT_FOLDER "%s/.exlog"
 #define FILENAME_LENGTH 26 // 24 for Date, 1 for preceding slash, 1 \0
 #define REPORT_ID "#ReportNumber:%d\n"
+#define REPORT_TZ "#TimeZone:%s\n"
 #define REPORT_LOCATION "#Location:%s\n"
 #define REPORT_PROJECT "#Project:%s\n"

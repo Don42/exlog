@@ -29,6 +29,7 @@ int
 add (const char* storageFolder)
 {
     printf ("Add operation\n");
+    tzset ();
     size_t mode = S_IRUSR | S_IWUSR;
 
     char* fileName = getFileName (storageFolder);
@@ -68,18 +69,15 @@ add (const char* storageFolder)
 char*
 getFileName(const char* storageFolder)
 {
-    const char *fileNameFormat = "%s/%s";
+    const char *fileNameFormat = "%s/%010d";
     const char* timeFormat = "%FT%T%z";
 
     time_t t = time(NULL);
-    struct tm te = *localtime(&t);
 
-    size_t sizeNeeded = strlen (storageFolder) + FILENAME_LENGTH;
-    char* timeBuffer = malloc (FILENAME_LENGTH);
-    strftime (timeBuffer, FILENAME_LENGTH, timeFormat, &te);
+    size_t sizeNeeded = strlen (storageFolder) + 12;
+
     char* buf = malloc (sizeNeeded);
-    snprintf (buf, sizeNeeded, fileNameFormat, storageFolder, timeBuffer);
-    free (timeBuffer);
+    snprintf (buf, sizeNeeded, fileNameFormat, storageFolder, t);
     return buf;
 }
 
@@ -121,6 +119,14 @@ copyTemplate (size_t id, const char* location, const char* project,
         exit (1);
     }
     fprintf (fp, REPORT_ID, id);
+    char* tz;
+    tz = getenv ("TZ");
+    if (tz == NULL)
+    {
+        tz = malloc (9);
+        tz = "UTC";
+    }
+    fprintf (fp, REPORT_TZ, tz);
     if (location != NULL)
     {
         fprintf (fp, REPORT_LOCATION, location);
