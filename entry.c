@@ -10,6 +10,7 @@
 
 #include <stdio.h>
 #include <dirent.h>
+#include <errno.h>
 #include <string.h>
 
 #include "entry.h"
@@ -26,8 +27,13 @@ char* getContentFromFile (FILE*);
 struct LogEntry*
 getEntryFromFile (const char* fileName)
 {
-    struct LogEntry* entry = malloc (sizeof (struct LogEntry));
     FILE* fp = fopen (fileName, "r");
+    if (fp == NULL)
+    {
+        fprintf (stderr, "Error opening file. %s\n", strerror (errno));
+        return NULL;
+    }
+    struct LogEntry* entry = malloc (sizeof (struct LogEntry));
     char* line = NULL;
     size_t len = 0;
     ssize_t read;
@@ -90,13 +96,15 @@ getEntryFromFile (const char* fileName)
     }
 
 
-    char* content = malloc (10);
-    strncpy (content, "test\0", 5);
-    while ((read = getline (&line, &len, fp)) != -1)
+    if ((read = getdelim (&line, &len, EOF, fp)) != -1)
     {
-
+        entry->content = malloc (len + 1);
+        strncpy (entry->content, line, len);
+    }else
+    {
+        entry->content = malloc (23);
+        strncpy (entry->content, "This is an empty entry\0", 23);
     }
-    entry->content = content;
 
     free (line);
     fclose (fp);

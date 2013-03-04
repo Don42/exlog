@@ -41,7 +41,7 @@ list(const char* storageFolder)
         {
             printf ("Entry %d at %d in timezone %s\n", entries[i]->id, entries[i]->time,
                     entries[i]->timezone);
-            printf ("Entry for project %s at location %s\n\n", entries[i]->project,
+            printf ("Entry for project %s at location %s\n", entries[i]->project,
                     entries[i]->location);
             printf ("Content: %s\n", entries[i]->content);
         }
