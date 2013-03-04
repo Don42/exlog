@@ -91,7 +91,7 @@ getEntryFromFile (const char* fileName)
 
 
     char* content = malloc (10);
-    strncpy (content, "test", 4);
+    strncpy (content, "test\0", 5);
     while ((read = getline (&line, &len, fp)) != -1)
     {
 
