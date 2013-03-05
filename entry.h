@@ -23,4 +23,4 @@ struct LogEntry
 
 
 struct LogEntry* getEntryFromFile (const char*);
-int getIDFromFile (FILE*);
+void freeEntry (struct LogEntry*);

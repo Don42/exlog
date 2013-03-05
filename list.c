@@ -39,9 +39,11 @@ list(const char* storageFolder)
         free (nameList[i]);
         if (entries[i] != NULL)
         {
-            printf ("Entry %d at %d in timezone %s\n", entries[i]->id, entries[i]->time,
+            printf ("Entry %d at %d in timezone %s\n", entries[i]->id,
+                    entries[i]->time,
                     entries[i]->timezone);
-            printf ("Entry for project %s at location %s\n", entries[i]->project,
+            printf ("Entry for project %s at location %s\n",
+                    entries[i]->project,
                     entries[i]->location);
             printf ("Content: %s\n", entries[i]->content);
         }
@@ -49,11 +51,7 @@ list(const char* storageFolder)
 
     for (i = 0; i < numberFiles; i++)
     {
-        free (entries[i]->timezone);
-        free (entries[i]->location);
-        free (entries[i]->project);
-        free (entries[i]->content);
-        free (entries[i]);
+        freeEntry (entries[i]);
     }
 
     free (fileNameBuffer);

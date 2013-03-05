@@ -111,6 +111,16 @@ getEntryFromFile (const char* fileName)
     return entry;
 }
 
+void
+freeEntry (struct LogEntry* entry)
+{
+    free (entry->timezone);
+    free (entry->location);
+    free (entry->project);
+    free (entry->content);
+    free (entry);
+}
+
 
 time_t
 getTimeFromFile (const char* fileName)
@@ -127,26 +137,4 @@ getTimeFromFile (const char* fileName)
     {
         return 0;
     }
-}
-
-int
-getIDFromFile (FILE* fp)
-{
-    char* line = NULL;
-    size_t len = 0;
-    ssize_t read;
-
-    if (fp == NULL)
-        return -1;
-
-    if ((read = getline (&line, &len, fp)) != -1)
-    {
-        size_t id = -1;
-        size_t ret = sscanf (line, REPORT_ID, &id);
-        fclose (fp);
-        return id;
-     }
-    fclose (fp);
-    return -1;
-
 }

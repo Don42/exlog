@@ -169,15 +169,9 @@ getNextID (const char* storageFolder)
         snprintf (fileName, strlen (storageFolder) + strlen (
                     nameList[numberFiles - 1]->d_name) + 2,
                     "%s/%s", storageFolder, nameList[numberFiles - 1]->d_name);
-        FILE* fp = fopen (fileName, "r");
-        if (fp != NULL)
-        {
-            id = getIDFromFile (fp) + 1;
-        }else
-        {
-            id = 0;
-        }
-        free (fileName);
+        struct LogEntry* entry = getEntryFromFile (fileName);
+        id = entry->id + 1;
+        freeEntry (entry);
     }
 
     for (i = 0; i < numberFiles; i++)
