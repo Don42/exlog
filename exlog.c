@@ -33,18 +33,38 @@ char* gStorageFolder;
 int
 main (int argc, char *argv[])
 {
-    size_t ch, cmd;
+    size_t cmd;
     const char *commands[]={"add", "rm", "list", NULL};
     enum {ADD,RM,LIST};
     uint id;
 
-    while ((ch = getopt(argc, argv, "h")) != -1)
+    const struct option long_options[] =
     {
-        switch (ch)
+        {"help",    0,  NULL,   'h'},
+        {"location",    1,  NULL,   'l'},
+        {"project", 1, NULL,    'p'},
+        {NULL,  0,  NULL,   0}
+    };
+
+    const char* location = NULL;
+    const char* project = NULL;
+    int next_option;
+    while ((next_option = getopt_long (argc, argv, "h", long_options, NULL))
+            != -1)
+    {
+        switch (next_option)
         {
             case 'h':
                 usage ();
                 exit (EXIT_SUCCESS);
+            case 'l':
+                location = optarg;
+                printf ("Location: %s\n", location);
+                break;
+            case 'p':
+                project = optarg;
+                printf ("Project: %s\n", project);
+                break;
             default:
                 usage ();
                 exit (EXIT_FAILURE);
@@ -63,7 +83,7 @@ main (int argc, char *argv[])
     switch (cmd)
     {
         case ADD:
-            return add (gStorageFolder);
+            add (gStorageFolder);
             break;
         case RM:
             if (argc >=2 && sscanf (argv[2], "%u", &id) == 1)
@@ -79,7 +99,7 @@ main (int argc, char *argv[])
             list (gStorageFolder);
             break;
         default:
-            fprintf (stderr, "Unknown command...");
+            fprintf (stderr, "Unknown command...\n");
             exit (EXIT_FAILURE);
             break;
     }
