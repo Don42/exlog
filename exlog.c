@@ -25,6 +25,8 @@ void usage (void);
 void setup (void);
 void teardown (void);
 
+void callAdd (int, char*[]);
+void callRm (int, char*[]);
 
 char* gStorageFolder;
 
@@ -36,42 +38,9 @@ main (int argc, char *argv[])
     size_t cmd;
     const char *commands[]={"add", "rm", "list", NULL};
     enum {ADD,RM,LIST};
-    uint id;
-
-    const struct option long_options[] =
-    {
-        {"help",    0,  NULL,   'h'},
-        {"location",    1,  NULL,   'l'},
-        {"project", 1, NULL,    'p'},
-        {NULL,  0,  NULL,   0}
-    };
-
-    const char* location = NULL;
-    const char* project = NULL;
-    int next_option;
-    while ((next_option = getopt_long (argc, argv, "h", long_options, NULL))
-            != -1)
-    {
-        switch (next_option)
-        {
-            case 'h':
-                usage ();
-                exit (EXIT_SUCCESS);
-            case 'l':
-                location = optarg;
-                printf ("Location: %s\n", location);
-                break;
-            case 'p':
-                project = optarg;
-                printf ("Project: %s\n", project);
-                break;
-            default:
-                usage ();
-                exit (EXIT_FAILURE);
-         }
-    }
 
     setup ();
+
     if (argc <= 1)
     {
         list (gStorageFolder);
@@ -83,17 +52,10 @@ main (int argc, char *argv[])
     switch (cmd)
     {
         case ADD:
-            add (gStorageFolder);
+            callAdd (argc, argv);
             break;
         case RM:
-            if (argc >=2 && sscanf (argv[2], "%u", &id) == 1)
-            {
-                rm (id);
-            }else
-            {
-                usage ();
-                exit (EXIT_FAILURE);
-            }
+            callRm (argc, argv);
             break;
         case LIST:
             list (gStorageFolder);
@@ -103,6 +65,9 @@ main (int argc, char *argv[])
             exit (EXIT_FAILURE);
             break;
     }
+
+
+
     teardown ();
     return 0;
 }
@@ -150,4 +115,61 @@ teardown (void)
 {
     free (gStorageFolder);
     gStorageFolder = NULL;
+}
+
+void
+callAdd (int argc, char* argv[])
+{
+    const struct option long_options[] =
+    {
+        {"help",    0,  NULL,   'h'},
+        {"location",    1,  NULL,   'l'},
+        {"project", 1, NULL,    'p'},
+        {NULL,  0,  NULL,   0}
+    };
+
+    const char* location = NULL;
+    const char* project = NULL;
+    int next_option;
+    while ((next_option = getopt_long (argc, argv, "h", long_options, NULL))
+            != -1)
+    {
+        switch (next_option)
+        {
+            case 'h':
+                usage ();
+                teardown ();
+                exit (EXIT_SUCCESS);
+            case 'l':
+                location = optarg;
+                printf ("Location: %s\n", location);
+                break;
+            case 'p':
+                project = optarg;
+                printf ("Project: %s\n", project);
+                break;
+            default:
+                usage ();
+                teardown ();
+                exit (EXIT_FAILURE);
+         }
+    }
+
+    add (gStorageFolder, location, project);
+
+}
+
+void
+callRm (int argc, char* argv[])
+{
+   uint id;
+   if (argc > 2 && sscanf (argv[2], "%u", &id) == 1)
+   {
+        rm (id);
+   }else
+   {
+       printf ("RM needs an id\n");
+       teardown ();
+       exit (EXIT_FAILURE);
+   }
 }

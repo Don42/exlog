@@ -28,7 +28,7 @@ size_t hasContent (const char*);
 int getNextID(const char*);
 
 int
-add (const char* storageFolder)
+add (const char* storageFolder, const char* location, const char* project)
 {
     printf ("Add operation\n");
     tzset ();
@@ -41,7 +41,7 @@ add (const char* storageFolder)
     {
         exit (25);
     }
-    copyTemplate(id, NULL, NULL, storageFolder);
+    copyTemplate(id, location, project, storageFolder);
     char* command = malloc (strlen (storageFolder) + 21);
     snprintf (command,strlen (storageFolder) + 21,
             "$EDITOR %s/REPORT_BASE", storageFolder);
@@ -99,10 +99,12 @@ hasContent (const char* fileName)
         if (line[0] != "#"[0])
         {
             fclose (fp);
+            free (line);
             return 1;
         }
     }
     fclose (fp);
+    free (line);
     return 0;
 }
 
@@ -141,6 +143,7 @@ copyTemplate (size_t id, const char* location, const char* project,
     fprintf (fp, REPORT_PROJECT, project);
 
     fclose (fp);
+    free (fileName);
     return 0;
 }
 
@@ -172,6 +175,7 @@ getNextID (const char* storageFolder)
         struct LogEntry* entry = getEntryFromFile (fileName);
         id = entry->id + 1;
         freeEntry (entry);
+        free (fileName);
     }
 
     for (i = 0; i < numberFiles; i++)
