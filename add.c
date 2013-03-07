@@ -30,7 +30,7 @@ char* readFromPipe (FILE*);
 char* getTimezone ();
 
 int
-add (const char* storageFolder, char* location, char* project)
+add (const char* storageFolder, const char* location, const char* project)
 {
     printf ("Add operation\n");
     tzset ();
@@ -38,11 +38,24 @@ add (const char* storageFolder, char* location, char* project)
     FILE* fp;
     char* fileName = getFileName (storageFolder);
     int id = getNextID (storageFolder);
+    char* fLocation = NULL;
+    char* fProject = NULL;
     char* contentBuffer = NULL;
 
     if (id < 0)
     {
         return (-25);
+    }
+
+    if (location != NULL)
+    {
+        fLocation = malloc (strlen (location) + 1);
+        strncpy (fLocation, location, strlen (location));
+    }
+    if (project != NULL)
+    {
+        fProject = malloc (strlen (project) + 1);
+        strncpy (fProject, project, strlen (project));
     }
 
 
@@ -54,18 +67,18 @@ add (const char* storageFolder, char* location, char* project)
     }
 
     contentBuffer = readFromPipe (fp);
-    if (contentBuffer != NULL && strlen (contentBuffer) < 0)
+    if (contentBuffer != NULL && strlen (contentBuffer) > 0)
     {
         struct LogEntry* entry = malloc (sizeof (struct LogEntry));
         entry->time = time(NULL);
 
         entry->id = id;
         entry->timezone = getTimezone ();
-        entry->location = location;
-        entry->project = project;
+        entry->location = fLocation;
+        entry->project = fProject;
         entry->content = contentBuffer;
-        printf ("%s", contentBuffer);
 
+        writeEntryToFile (storageFolder, entry);
         freeEntry (entry);
     }
 
@@ -100,7 +113,7 @@ readFromPipe (FILE* fp)
                 block_size,
                 fp);
         if (chars_io == NULL) break;
-        buffer_offset += block_size;
+        buffer_offset += block_size - 1;
     }
 
     if (chars_io < 0)
@@ -193,14 +206,20 @@ copyTemplate (size_t id, const char* location, const char* project,
 char*
 getTimezone ()
 {
+    char* env;
     char* tz;
-    tz = getenv ("TZ");
+    env = getenv ("TZ");
 
-    if (tz == NULL)
+    if (env == NULL)
     {
         tz = malloc (4);
         strncpy (tz, "UTC\0", 4);
+    }else
+    {
+        tz = malloc (strlen (env) + 1);
+        strncpy (tz, env, strlen (env) + 1);
     }
+
     return tz;
 }
 

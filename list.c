@@ -39,13 +39,7 @@ list(const char* storageFolder)
         free (nameList[i]);
         if (entries[i] != NULL)
         {
-            printf ("Entry %d at %d in timezone %s\n", entries[i]->id,
-                    entries[i]->time,
-                    entries[i]->timezone);
-            printf ("Entry for project %s at location %s\n",
-                    entries[i]->project,
-                    entries[i]->location);
-            printf ("Content: %s\n", entries[i]->content);
+            printEntry (entries[i]);
         }
     }
 
@@ -57,29 +51,5 @@ list(const char* storageFolder)
     free (fileNameBuffer);
     free (entries);
     free (nameList);
-    return 0;
-}
-
-
-int
-printEntry (const char* fileName)
-{
-    FILE* fp = fopen (fileName, "r");
-    char* line = NULL;
-    size_t len = 0;
-    ssize_t read;
-
-    if (fp == NULL)
-        return -1;
-
-    while ((read = getline (&line, &len, fp)) != -1)
-    {
-        size_t id = -1;
-        size_t ret = sscanf (line, REPORT_ID, &id);
-        printf ("%s", line);
-    }
-    if (line != NULL){free (line);}
-    printf ("\n");
-    fclose (fp);
     return 0;
 }

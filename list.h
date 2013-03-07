@@ -9,4 +9,3 @@
 #define _GNU_SOURCE
 
 int list (const char*);
-int printEntry (const char*);

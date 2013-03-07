@@ -138,3 +138,34 @@ getTimeFromFile (const char* fileName)
         return 0;
     }
 }
+
+void
+printEntry (const struct LogEntry* entry)
+{
+    printf ("Entry %d at %d in timezone %s\n",
+            entry->id,
+            entry->time,
+            entry->timezone);
+    if (entry->project == NULL)
+    {
+        printf ("Entry for project default ");
+    }else
+    {
+        printf ("Entry for project %s ", entry->project);
+    }
+    if (entry->location == NULL)
+    {
+        printf ("at location default\n");
+    }else
+    {
+        printf ("at location %s\n", entry->location);
+    }
+    printf ("Content: %s\n", entry->content);
+}
+
+int
+writeEntryToFile (const char* storageFolder, struct LogEntry* entry)
+{
+    printEntry (entry);
+    return 0;
+}

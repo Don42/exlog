@@ -23,5 +23,6 @@ struct LogEntry
 
 
 struct LogEntry* getEntryFromFile (const char*);
-int writeEntryToFile (struct LogEntry*);
+int writeEntryToFile (const char* gStorageFolder, struct LogEntry*);
 void freeEntry (struct LogEntry*);
+void printEntry (const struct LogEntry*);

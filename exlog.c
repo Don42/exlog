@@ -142,11 +142,9 @@ callAdd (int argc, char* argv[])
                 exit (EXIT_SUCCESS);
             case 'l':
                 location = optarg;
-                printf ("Location: %s\n", location);
                 break;
             case 'p':
                 project = optarg;
-                printf ("Project: %s\n", project);
                 break;
             default:
                 usage ();
