@@ -26,46 +26,89 @@ size_t  copyTemplate (size_t ,const char*, const char*, const char*);
 char* getFileName (const char*);
 size_t hasContent (const char*);
 int getNextID(const char*);
+char* readFromPipe (FILE*);
+char* getTimezone ();
 
 int
-add (const char* storageFolder, const char* location, const char* project)
+add (const char* storageFolder, char* location, char* project)
 {
     printf ("Add operation\n");
     tzset ();
     size_t mode = S_IRUSR | S_IWUSR;
-
+    FILE* fp;
     char* fileName = getFileName (storageFolder);
-
     int id = getNextID (storageFolder);
+    char* contentBuffer = NULL;
+
     if (id < 0)
     {
-        exit (25);
+        return (-25);
     }
-    copyTemplate(id, location, project, storageFolder);
-    char* command = malloc (strlen (storageFolder) + 21);
-    snprintf (command,strlen (storageFolder) + 21,
-            "$EDITOR %s/REPORT_BASE", storageFolder);
-    size_t ret = system (command);
-    snprintf (command, strlen(storageFolder) + 21,
-            "%s/REPORT_BASE\0", storageFolder);
-    if (ret == 0 && hasContent(command))
+
+
+    fp = popen ("/usr/bin/vipe </dev/null", "r");
+    if (fp == NULL)
     {
-        if (execl ("/bin/mv", "/bin/mv", command, fileName, (char *)0) != 0)
-        {
-            fprintf (stderr, "%s\n", strerror (errno));
-            exit (10);
-        }
-    }else
-    {
-        if (remove (command) != 0)
-        {
-            fprintf (stderr, "%s\n", strerror (errno));
-            exit (11);
-        }
+        printf ("Failed to run command\n");
+        return -1;
     }
-    free (command);
+
+    contentBuffer = readFromPipe (fp);
+    if (contentBuffer != NULL && strlen (contentBuffer) < 0)
+    {
+        struct LogEntry* entry = malloc (sizeof (struct LogEntry));
+        entry->time = time(NULL);
+
+        entry->id = id;
+        entry->timezone = getTimezone ();
+        entry->location = location;
+        entry->project = project;
+        entry->content = contentBuffer;
+        printf ("%s", contentBuffer);
+
+        freeEntry (entry);
+    }
+
+    fclose (fp);
     free (fileName);
     return 0;
+}
+
+char*
+readFromPipe (FILE* fp)
+{
+    const size_t block_size = 40;
+    char* read_buffer = NULL;
+    size_t buffer_size = 0;
+    size_t buffer_offset = 0;
+    char* chars_io;
+
+    while (1)
+    {
+        if (buffer_offset + block_size > buffer_size)
+        {
+            buffer_size = buffer_size + block_size * 2;
+            read_buffer = realloc (read_buffer, buffer_size);
+            if (read_buffer == NULL)
+            {
+                perror ("Not enough memory");
+                return "";
+            }
+        }
+
+        chars_io = fgets (read_buffer + buffer_offset,
+                block_size,
+                fp);
+        if (chars_io == NULL) break;
+        buffer_offset += block_size;
+    }
+
+    if (chars_io < 0)
+    {
+        perror ("Read error");
+        return "";
+    }
+    return read_buffer;
 }
 
 char*
@@ -74,7 +117,7 @@ getFileName(const char* storageFolder)
     const char *fileNameFormat = "%s/%010d";
     const char* timeFormat = "%FT%T%z";
 
-    time_t t = time(NULL);
+    time_t t = time (NULL);
 
     size_t sizeNeeded = strlen (storageFolder) + 12;
 
@@ -145,6 +188,20 @@ copyTemplate (size_t id, const char* location, const char* project,
     fclose (fp);
     free (fileName);
     return 0;
+}
+
+char*
+getTimezone ()
+{
+    char* tz;
+    tz = getenv ("TZ");
+
+    if (tz == NULL)
+    {
+        tz = malloc (4);
+        strncpy (tz, "UTC\0", 4);
+    }
+    return tz;
 }
 
 

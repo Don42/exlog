@@ -8,4 +8,4 @@
 
 #define _GNU_SOURCE
 
-int add (const char*, const char*, const char*);
+int add (const char*, char*, char*);
