@@ -44,7 +44,7 @@ main (int argc, char *argv[])
     if (argc <= 1)
     {
         list (gStorageFolder);
-        free (gStorageFolder);
+        teardown ();
         exit (EXIT_SUCCESS);
     }
 
@@ -163,13 +163,16 @@ void
 callRm (int argc, char* argv[])
 {
    uint id;
-   if (argc > 2 && sscanf (argv[2], "%u", &id) == 1)
+   if (argc < 2)
    {
-        rm (id);
-   }else
-   {
-       printf ("RM needs an id\n");
+       printf ("You need to specify what to delete.\n");
        teardown ();
        exit (EXIT_FAILURE);
+   }else
+   {
+       if (sscanf (argv[2], "%u", &id) == 1)
+       {
+           rm (id);
+       }
    }
 }
