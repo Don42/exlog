@@ -22,9 +22,6 @@
 #include "entry.h"
 #include "filter.h"
 
-size_t  copyTemplate (size_t ,const char*, const char*, const char*);
-char* getFileName (const char*);
-size_t hasContent (const char*);
 int getNextID(const char*);
 char* readFromPipe (FILE*);
 char* getTimezone ();
@@ -36,7 +33,6 @@ add (const char* storageFolder, const char* location, const char* project)
     tzset ();
     size_t mode = S_IRUSR | S_IWUSR;
     FILE* fp;
-    char* fileName = getFileName (storageFolder);
     int id = getNextID (storageFolder);
     char* fLocation = NULL;
     char* fProject = NULL;
@@ -83,7 +79,6 @@ add (const char* storageFolder, const char* location, const char* project)
     }
 
     fclose (fp);
-    free (fileName);
     return 0;
 }
 
@@ -124,84 +119,6 @@ readFromPipe (FILE* fp)
     return read_buffer;
 }
 
-char*
-getFileName(const char* storageFolder)
-{
-    const char *fileNameFormat = "%s/%010d";
-    const char* timeFormat = "%FT%T%z";
-
-    time_t t = time (NULL);
-
-    size_t sizeNeeded = strlen (storageFolder) + 12;
-
-    char* buf = malloc (sizeNeeded);
-    snprintf (buf, sizeNeeded, fileNameFormat, storageFolder, t);
-    return buf;
-}
-
-size_t
-hasContent (const char* fileName)
-{
-    FILE* fp = fopen (fileName, "r");
-    char* line = NULL;
-    size_t len = 0;
-    ssize_t read;
-
-    if (fp == NULL)
-        return 0;
-
-    while ((read = getline ( &line, &len, fp)) != -1)
-    {
-        if (line[0] != "#"[0])
-        {
-            fclose (fp);
-            free (line);
-            return 1;
-        }
-    }
-    fclose (fp);
-    free (line);
-    return 0;
-}
-
-
-size_t
-copyTemplate (size_t id, const char* location, const char* project,
-        const char* storageFolder)
-{
-    char* fileName = malloc (strlen (storageFolder) + 13);
-    snprintf (fileName, strlen (storageFolder) + 13, "%s/REPORT_BASE",
-            storageFolder);
-    FILE* fp = fopen (fileName, "w");
-    if (fp == NULL)
-    {
-        fprintf (stderr, "Could not open template file: %s", strerror (errno));
-        exit (1);
-    }
-    fprintf (fp, REPORT_ID, id);
-    char* tz;
-    tz = getenv ("TZ");
-    if (tz == NULL)
-    {
-        tz = malloc (9);
-        tz = "UTC";
-    }
-    fprintf (fp, REPORT_TZ, tz);
-    if (location == NULL)
-    {
-        location = "";
-    }
-    fprintf (fp, REPORT_LOCATION, location);
-    if (project == NULL)
-    {
-        project = "";
-    }
-    fprintf (fp, REPORT_PROJECT, project);
-
-    fclose (fp);
-    free (fileName);
-    return 0;
-}
 
 char*
 getTimezone ()

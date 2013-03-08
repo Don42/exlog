@@ -22,7 +22,7 @@ char* getTimezoneFromFile (FILE*);
 char* getLocationFromFile (FILE*);
 char* getprojectFromFile (FILE*);
 char* getContentFromFile (FILE*);
-
+char* getFileName (const char* storageFolder, const struct LogEntry*);
 
 struct LogEntry*
 getEntryFromFile (const char* fileName)
@@ -166,6 +166,50 @@ printEntry (const struct LogEntry* entry)
 int
 writeEntryToFile (const char* storageFolder, struct LogEntry* entry)
 {
-    printEntry (entry);
+    char* fileName = getFileName (storageFolder, entry);
+    FILE* fp = fopen (fileName, "w");
+    if (fp == NULL)
+    {
+        fprintf (stderr, "Could not open file %s for writing.\n%s\n",
+                fileName, strerror (errno));
+        free (fileName);
+        return -1;
+    }
+    fprintf (fp, REPORT_ID, entry->id);
+    fprintf (fp, REPORT_TZ, entry->timezone);
+
+    if (entry->location == NULL)
+    {
+        fprintf (fp, REPORT_LOCATION, "");
+    }else
+    {
+        fprintf (fp, REPORT_LOCATION, entry->location);
+    }
+    if (entry->project == NULL)
+    {
+        fprintf (fp, REPORT_PROJECT, "");
+    }else
+    {
+        fprintf (fp, REPORT_PROJECT, entry->project);
+    }
+    fprintf (fp, "%s", entry->content);
+
+    fclose (fp);
+    free (fileName);
     return 0;
+}
+
+char*
+getFileName(const char* storageFolder, const struct LogEntry* entry)
+{
+    const char *fileNameFormat = "%s/%010d";
+    const char* timeFormat = "%FT%T%z";
+
+    time_t t = entry->time;
+
+    size_t sizeNeeded = strlen (storageFolder) + 12;
+
+    char* buf = malloc (sizeNeeded);
+    snprintf (buf, sizeNeeded, fileNameFormat, storageFolder, t);
+    return buf;
 }
