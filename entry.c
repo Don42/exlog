@@ -139,14 +139,31 @@ getTimeFromFile (const char* fileName)
     }
 }
 
+struct tm*
+getCorrectedTime (const struct LogEntry* entry)
+{
+    char* curTZ = getenv ("TZ");
+    setenv ("TZ", entry->timezone, 1);
+
+    struct tm* t = localtime (&entry->time);
+    setenv ("TZ", curTZ, 1);
+    return t;
+}
+
 void
 printEntry (const struct LogEntry* entry)
 {
-    printf ("Entry %d at %d in timezone %s\n",
+    struct tm* t = getCorrectedTime (entry);
+    char* date = malloc (26);
+    if (t != NULL)
+    {
+        strftime (date, 26, "%F %T %z\0", t);
+    }
+
+    printf ("Entry %d at %s\n",
             entry->id,
-            entry->time,
-            entry->timezone);
-    if (entry->project == NULL)
+            date);
+    if (entry->project == NULL || strcmp(entry->project, ""))
     {
         printf ("Entry for project default ");
     }else
