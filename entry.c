@@ -178,6 +178,8 @@ printEntry (const struct LogEntry* entry)
         printf ("at location %s\n", entry->location);
     }
     printf ("Content: %s\n", entry->content);
+
+    free (date);
 }
 
 int
