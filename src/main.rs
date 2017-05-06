@@ -27,7 +27,18 @@ fn main() {
         .get_matches();
 
     println!("{:?}", matches);
-    let config = config::Config::load();
+    let config = config::Config::load().unwrap_or_else(|err| {
+        match err {
+            config::Error::NotFound => {
+                match config::write_defaults() {
+                    Ok(path) => println!("Config file not found; writing default config {:?}", path),
+                    Err(err) => println!("Failure to write default config: {}", err)
+                }
+                config::Config::load().unwrap()
+            },
+            _ => panic!("{}", err),
+        }
+    });
     initialization(matches);
     println!("Config Path: {:?}", config)
 }

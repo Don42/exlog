@@ -1,10 +1,12 @@
 
-use std::io::{self};
+use std::io;
 use std::fs::File;
-use std::io::prelude::Read;
+use std::io::prelude::{Read, Write};
 use std::convert::From;
 use xdg;
 use toml;
+
+static DEFAULT_EXLOG_CONFIG: &'static str = include_str!("../exlog.toml");
 
 /// Errors that can occur during config loading
 #[derive(Debug)]
@@ -20,6 +22,37 @@ pub enum Error {
 
     /// Invalid toml in file
     TOML(toml::de::Error),
+}
+
+impl ::std::error::Error for Error {
+    fn cause(&self) -> Option<&::std::error::Error> {
+        match *self {
+            Error::NotFound => None,
+            Error::XDG(ref err) => Some(err),
+            Error::IO(ref err) => Some(err),
+            Error::TOML(ref err) => Some(err),
+        }
+    }
+
+    fn description(&self) -> &str {
+        match *self {
+            Error::NotFound => "config file not found",
+            Error::XDG(ref err) => err.description(),
+            Error::IO(ref err) => err.description(),
+            Error::TOML(ref err) => err.description(),
+        }
+    }
+}
+
+impl ::std::fmt::Display for Error {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+        match *self {
+            Error::TOML(ref err) => write!(f, "error during config parsing: {}", err),
+            Error::IO(ref err) => write!(f, "error during read operation: {}", err),
+            Error::XDG(ref err) => write!(f, "error reading xdg folders: {}", err),
+            Error::NotFound => write!(f, "{}", ::std::error::Error::description(self)),
+        }
+    }
 }
 
 impl From<io::Error> for Error {
@@ -57,7 +90,7 @@ impl Config {
         // Unsure under which conditions this fails
         let dirs = xdg::BaseDirectories::with_prefix("exlog")?;
 
-        let config_path = dirs.find_config_file("config.toml")
+        let config_path = dirs.find_config_file("exlog.toml")
             .ok_or_else(|| Error::NotFound)?;
         Config::load_from(config_path)
     }
@@ -76,4 +109,12 @@ impl Config {
 
         Ok(contents)
     }
+}
+
+pub fn write_defaults() -> io::Result<::std::path::PathBuf> {
+    let path = xdg::BaseDirectories::with_prefix("exlog")
+        .map_err(|err| io::Error::new(io::ErrorKind::NotFound, ::std::error::Error::description(&err)))
+        .and_then(|p| p.place_config_file("exlog.toml"))?;
+    File::create(&path)?.write_all(DEFAULT_EXLOG_CONFIG.as_bytes())?;
+    Ok(path)
 }
