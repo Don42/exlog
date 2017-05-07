@@ -6,14 +6,14 @@ extern crate serde_derive;
 
 mod config;
 
-fn initialization(args: clap::ArgMatches) {
+const PROGRAM_NAME: &'static str = "exlog";
 
-}
+const EXLOG_TEMPLATE: &'static str = include_str!("../exlog.template");
 
 
 fn main() {
-    use clap::{Arg, App, SubCommand, AppSettings};
-    let matches = App::new("exlog")
+    use clap::{App, SubCommand, AppSettings};
+    let matches = App::new(PROGRAM_NAME)
         .version("0.1.0")
         .author("Marco \"don\" Kaulea don4221@gmail.com")
         .about("Manage log/diary entries")
@@ -39,6 +39,4 @@ fn main() {
             _ => panic!("{}", err),
         }
     });
-    initialization(matches);
-    println!("Config Path: {:?}", config)
 }

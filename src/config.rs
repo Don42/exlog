@@ -88,7 +88,7 @@ pub type Result<T> = ::std::result::Result<T, Error>;
 impl Config {
     pub fn load() -> Result<Config> {
         // Unsure under which conditions this fails
-        let dirs = xdg::BaseDirectories::with_prefix("exlog")?;
+        let dirs = xdg::BaseDirectories::with_prefix(::PROGRAM_NAME)?;
 
         let config_path = dirs.find_config_file("exlog.toml")
             .ok_or_else(|| Error::NotFound)?;
@@ -112,7 +112,7 @@ impl Config {
 }
 
 pub fn write_defaults() -> io::Result<::std::path::PathBuf> {
-    let path = xdg::BaseDirectories::with_prefix("exlog")
+    let path = xdg::BaseDirectories::with_prefix(::PROGRAM_NAME)
         .map_err(|err| io::Error::new(io::ErrorKind::NotFound, ::std::error::Error::description(&err)))
         .and_then(|p| p.place_config_file("exlog.toml"))?;
     File::create(&path)?.write_all(DEFAULT_EXLOG_CONFIG.as_bytes())?;
