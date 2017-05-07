@@ -34,16 +34,17 @@ impl Exlog {
     pub fn timestamp(&mut self, timestamp: datetime::DateTime<Local>) {
         self.timestamp = timestamp;
     }
-}
 
-
-pub fn write_exlog(exlog: Exlog) -> ::std::result::Result<(), Box<::std::error::Error>> {
-    use std::io;
-    use std::fs::File;
-    use std::io::prelude::Write;
-    let target_path = ::xdg::BaseDirectories::with_prefix(::PROGRAM_NAME)
-        .map_err(|err| io::Error::new(io::ErrorKind::NotFound, ::std::error::Error::description(&err)))
-        .and_then(|p| p.place_data_file("tmp.txt"))?;
-    File::create(&target_path)?.write_all(exlog.content.as_bytes())?;
-    Ok(())
+    pub fn store(&self) -> ::std::result::Result<(), Box<::std::error::Error>> {
+        use std::io;
+        use std::fs::File;
+        use std::io::prelude::Write;
+        let file_name: String = format!("{}.txt", self.timestamp.timestamp());
+        let target_path = ::xdg::BaseDirectories::with_prefix(::PROGRAM_NAME)
+            .map_err(|err| io::Error::new(io::ErrorKind::NotFound, ::std::error::Error::description(&err)))
+            .and_then(|p| p.place_data_file(file_name))?;
+        let mut file = File::create(&target_path)?;
+        file.write_all(self.content.as_bytes())?;
+        Ok(())
+    }
 }

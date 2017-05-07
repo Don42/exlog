@@ -63,8 +63,7 @@ fn run(args: clap::ArgMatches, config: config::Config)
 fn add_exlog()
     -> std::result::Result<(), Box<std::error::Error>> {
     let content = get_user_entry()?;
-    let exlog = exlog::Exlog::new(content);
-    exlog::write_exlog(exlog)
+    exlog::Exlog::new(content).store()
 }
 
 fn get_user_entry()
