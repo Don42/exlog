@@ -112,8 +112,10 @@ impl Config {
 }
 
 pub fn write_defaults() -> io::Result<::std::path::PathBuf> {
-    let path = xdg::BaseDirectories::with_prefix(::PROGRAM_NAME)
-        .map_err(|err| io::Error::new(io::ErrorKind::NotFound, ::std::error::Error::description(&err)))
+    let path = xdg::BaseDirectories::with_prefix(::PROGRAM_NAME).map_err(|err| {
+            io::Error::new(io::ErrorKind::NotFound,
+                           ::std::error::Error::description(&err))
+        })
         .and_then(|p| p.place_config_file("exlog.toml"))?;
     File::create(&path)?.write_all(DEFAULT_EXLOG_CONFIG.as_bytes())?;
     Ok(path)
