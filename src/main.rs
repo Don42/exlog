@@ -137,7 +137,11 @@ mod tests {
     }
 
     #[test]
-    fn break_the_build() {
-        panic!("This verifies that the tests breaks.")
+    fn test_time_gen() {
+        let mut buffer: Vec<u8> = Vec::new();
+        let res = super::time_gen(&mut buffer);
+
+        assert!(res.unwrap() == ());
+        println!("{:?}",  buffer);
     }
 }
