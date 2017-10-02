@@ -27,7 +27,7 @@ fn main() {
     use clap::{App, SubCommand, AppSettings, Arg};
     let matches = App::new(PROGRAM_NAME)
         .version("0.1.0")
-        .author("Marco \"don\" Kaulea don4221@gmail.com")
+        .author("Marco \"don\" Kaulea don@0xbeef.org")
         .about("Manage log/diary entries")
         .setting(AppSettings::SubcommandRequired)
         .subcommand(SubCommand::with_name("add").about("Add log"))
@@ -128,4 +128,16 @@ fn time_gen(write: &mut Write) -> std::io::Result<()> {
     let utc = chrono::UTC::now();
     write!(write, "{}", utc)?;
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn it_works() {
+    }
+
+    #[test]
+    fn break_the_build() {
+        panic!("This verifies that the tests breaks.")
+    }
 }
